@@ -1,1 +1,2 @@
 print("hehe")
+print("new")
