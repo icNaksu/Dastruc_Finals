@@ -19,3 +19,6 @@ CHANGE BRANCH
 
 git branch (to check kung saang branch ka, if * master lumabas)
 git branch -m main
+
+
+the day you said goodnith
