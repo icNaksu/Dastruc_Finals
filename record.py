@@ -41,10 +41,10 @@ combo.grid(row=2, column=0, sticky='w', padx=150)
 
 def update_datetime():
     now = datetime.now()
-    date_str = now.strftime("%B %d, %Y")       # e.g., June 5, 2025
-    time_str = now.strftime("%I:%M:%S %p")     # e.g., 03:45:22 PM
+    date_str = now.strftime("%B %d, %Y")       
+    time_str = now.strftime("%I:%M:%S %p")     
     datetime_label.config(text=f"{date_str}   |   {time_str}")
-    car.after(1000, update_datetime)  # Update every 1000ms (1 second)
+    car.after(1000, update_datetime)  
     
 datetime_label = tk.Label(car, font=('Arial', 18), bg="white", fg="black")
 datetime_label.grid(row=0, column=1, columnspan=2, sticky='e', padx=20, pady=10)
@@ -73,10 +73,6 @@ tk.Label(car, text="Status", font=header_font, bg="#FFFFFF").grid(row=4, column=
 
 #NAMES
 tk.Label(car, text = "Abellera, Roinier", bg="#FFFFFF").grid(row=5, column=0, sticky='w', padx=50)
-
-
-
-
     
 update_datetime()  # Start the loop
 car.mainloop()
