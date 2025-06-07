@@ -28,7 +28,7 @@ def record_time_out(student_name):
     
     return time_out
 
-def calculate_status(student_name, scheduled_time_in="03:00:00 PM"):
+def calculate_status(student_name, scheduled_time_in="06:05:00 PM"):
     fmt = "%I:%M:%S %p"
     if student_name not in attendance_data or 'time_in' not in attendance_data[student_name]:
         return "Absent"
