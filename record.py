@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from datetime import datetime
+from func import record_time_in, record_time_out, calculate_status
 
 car = tk.Tk()
 car.title("Class Attendance Record")
@@ -73,6 +74,5 @@ tk.Label(car, text="Status", font=header_font, bg="#FFFFFF").grid(row=4, column=
 
 #NAMES
 tk.Label(car, text = "Abellera, Roinier", bg="#FFFFFF").grid(row=5, column=0, sticky='w', padx=50)
-    
 update_datetime()  # Start the loop
 car.mainloop()
