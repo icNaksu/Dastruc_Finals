@@ -2,9 +2,12 @@ import tkinter as tk
 from tkinter import ttk
 from datetime import datetime
 from PIL import Image, ImageTk
+import csv
 
 attendance_data = {}
 attendance_stack = []
+time_in_stack = []
+time_out_stack = []
 
 #FUNCTIONS
 def record_time_in(student_name):
@@ -16,7 +19,7 @@ def record_time_in(student_name):
 
     if 'time_in' not in attendance_data[student_name]:
         attendance_data[student_name]['time_in'] = time_in
-        attendance_stack.append((student_name, 'time_in', time_in))
+        time_in_stack.append((student_name, time_in))
         return time_in
     return attendance_data[student_name]['time_in']
 
@@ -29,7 +32,7 @@ def record_time_out(student_name):
 
     if 'time_out' not in attendance_data[student_name]:
         attendance_data[student_name]['time_out'] = time_out
-        attendance_stack.append((student_name, 'time_out', time_out))
+        time_out_stack.append((student_name, time_out))
         return time_out
     return attendance_data[student_name]['time_out']
 
@@ -41,14 +44,27 @@ def calculate_status(student_name, scheduled_time_in="03:00:00 PM"):
     scheduled = datetime.strptime(scheduled_time_in, fmt)
     return "On time" if time_in <= scheduled else "Late"
 
-def pop_last_action():
-    if attendance_stack:
-        student_name, action_type, _ = attendance_stack.pop()
-        if action_type in attendance_data.get(student_name, {}):
-            del attendance_data[student_name][action_type]
-        return f"Undid {action_type} for {student_name}"
-    return "No actions to undo."
+def undo_time_in():
+    if time_in_stack:
+        student_name, _ = time_in_stack.pop()
+        if 'time_in' in attendance_data.get(student_name, {}):
+            del attendance_data[student_name]['time_in']
 
+def undo_time_out():
+    if time_out_stack:
+        student_name, _ = time_out_stack.pop()
+        if 'time_out' in attendance_data.get(student_name, {}):
+            del attendance_data[student_name]['time_out']
+
+def handle_undo_time_in():
+    msg = undo_time_in()
+    canvas.itemconfig(time_in_text_id, text=attendance_data.get(student_name, {}).get('time_in', ''))
+    canvas.itemconfig(status_text_id, text=calculate_status(student_name))
+
+def handle_undo_time_out():
+    msg = undo_time_out()
+    canvas.itemconfig(time_out_text_id, text=attendance_data.get(student_name, {}).get('time_out', ''))
+    
 #GUI
 car = tk.Tk()
 car.title("Class Attendance Record")
@@ -111,11 +127,12 @@ def make_button(text, x, y, color, command):
     btn.place(x=x, y=y, width=160, height=50)
     return btn
 
-btn_time_in = make_button("Time In", 600, 340, "#4CAF50", lambda: handle_time_in())
-btn_time_out = make_button("Time Out", 800, 340, "#FF9800", lambda: handle_time_out())
-btn_undo = make_button("Undo", 1000, 340, "#FF0000", lambda: handle_undo())
+btn_time_in = make_button("Time In", 587, 340, "#4CAF50", lambda: handle_time_in())
+btn_time_out = make_button("Time Out", 997, 340, "#FF9800", lambda: handle_time_out())
+btn_undo_time_in = make_button("Undo Time In", 587, 440, "#FF0000", lambda: handle_undo_time_in())
+btn_undo_time_out = make_button("Undo Time Out", 997, 440, "#D32F2F", lambda: handle_undo_time_out())
 
-undo_label_id = canvas.create_text(600, 410, text="", font=('Arial', 14), fill='red', anchor='nw')
+
 
 #BUTTON FUNCTIONS
 def handle_time_in():
@@ -127,14 +144,7 @@ def handle_time_in():
 def handle_time_out():
     time_out = record_time_out(student_name)
     canvas.itemconfig(time_out_text_id, text=time_out)
-
-def handle_undo():
-    msg = pop_last_action()
-    canvas.itemconfig(time_in_text_id, text=attendance_data.get(student_name, {}).get('time_in', ''))
-    canvas.itemconfig(time_out_text_id, text=attendance_data.get(student_name, {}).get('time_out', ''))
-    status = calculate_status(student_name)
-    canvas.itemconfig(status_text_id, text=status)
-
+    
 #REALTIME CLOCK
 def update_datetime():
     now = datetime.now()
