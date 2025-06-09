@@ -3,6 +3,7 @@ from tkinter import ttk
 from datetime import datetime
 from PIL import Image, ImageTk
 import csv
+from tkinter import messagebox
 
 attendance_data = {}
 time_in_stack = []
@@ -99,14 +100,11 @@ def undo_time_in():
     student_name = selected_student.get()
     if 'time_in' in attendance_data.get(student_name, {}) and attendance_data[student_name]['time_in']:
         removed = attendance_data[student_name]['time_in'].pop()
-        print(f"Removed time in: {removed} for {student_name}")
-
 
 def undo_time_out():
     student_name = selected_student.get()
     if 'time_out' in attendance_data.get(student_name, {}) and attendance_data[student_name]['time_out']:
         removed = attendance_data[student_name]['time_out'].pop()
-        print(f"Removed time out: {removed} for {student_name}")
 
 # GUI setup
 car = tk.Tk()
@@ -176,6 +174,13 @@ def handle_time_in():
 
 def handle_time_out():
     student_name = selected_student.get()
+    times_in = attendance_data.get(student_name, {}).get("time_in", [])
+    
+    if not times_in:
+        # Student has not timed in yet
+        tk.messagebox.showwarning("Warning", f"{student_name} has not timed in yet!")
+        return
+    
     time_out = record_time_out(student_name)
     canvas.itemconfig(time_out_text_id, text=time_out)
     export_to_csv()
