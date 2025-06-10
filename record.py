@@ -167,6 +167,12 @@ status_text_id = canvas.create_text(1400, 260, text="", font=('Arial', 18), anch
 # BUTTON FUNCTIONS
 def handle_time_in():
     student_name = selected_student.get()
+    times_in = attendance_data.get(student_name, {}).get("time_in", [])
+
+    if times_in:
+        tk.messagebox.showinfo("Info", f"{student_name} has already timed in.")
+        return
+
     time_in = record_time_in(student_name)
     canvas.itemconfig(time_in_text_id, text=time_in)
     canvas.itemconfig(status_text_id, text=calculate_status_for_time_in(time_in))
@@ -174,13 +180,17 @@ def handle_time_in():
 
 def handle_time_out():
     student_name = selected_student.get()
+    times_out = attendance_data.get(student_name, {}).get("time_out", [])
     times_in = attendance_data.get(student_name, {}).get("time_in", [])
-    
+
     if not times_in:
-        # Student has not timed in yet
         tk.messagebox.showwarning("Warning", f"{student_name} has not timed in yet!")
         return
-    
+
+    if times_out:
+        tk.messagebox.showinfo("Info", f"{student_name} has already timed out.")
+        return
+
     time_out = record_time_out(student_name)
     canvas.itemconfig(time_out_text_id, text=time_out)
     export_to_csv()
