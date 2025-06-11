@@ -11,7 +11,7 @@ time_out_stack = []
 
 #NAMES
 student_names = [
-    "Abobo, Sunlyn T.", "Aguilar, Frances Heart B.", "Almazan, Neil Daniel G.",
+    "Abellera, Roiner V.", "Abobo, Sunlyn T.", "Aguilar, Frances Heart B.", "Almazan, Neil Daniel G.",
     "Azul, Salvador lll L.", "Balaguer, Bryan Paulo G.", "Balde, Bryan Joshua Y.",
     "Baloyo, Princess Jade D.", "Baltazar, Jeremy J.", "Bolanos, Raneelhei M.",
     "Buizon, Nico Charlie C.", "Cabonce, Lawrence Carlylle A.", "Datanagan, Marc Janz O.",
@@ -29,6 +29,7 @@ student_names = [
 #EXPORT TO CSV FILE(EXCEL)
 def export_to_csv():
     today_str = datetime.now().strftime("%Y-%m-%d")
+    total_present, total_absent = get_attendance_totals()
     filename = f"attendance_{today_str}.csv"
 
     # TIME IN TABLE
@@ -38,7 +39,7 @@ def export_to_csv():
         for time_in in times_in:
             students_with_time_in.append((student, time_in))
 
-    #SORTED BY ASCENDING ORDER FIRST COMERS GO TO THE BOTTOM OF THE CSV
+    # SORTED BY ASCENDING ORDER FIRST COMERS GO TO THE BOTTOM OF THE CSV
     students_with_time_in.sort(key=lambda x: datetime.strptime(x[1], "%I:%M:%S %p"), reverse=True)
 
     # TIME OUT TABLE
@@ -48,7 +49,7 @@ def export_to_csv():
         for time_out in times_out:
             students_with_time_out.append((student, time_out))
 
-    #SAME AS TIME IN 
+    # SAME AS TIME IN 
     students_with_time_out.sort(key=lambda x: datetime.strptime(x[1], "%I:%M:%S %p"), reverse=True)
 
     with open(filename, mode='w', newline='') as file:
@@ -69,6 +70,14 @@ def export_to_csv():
         writer.writerow(["Name", "Time Out"])
         for student, time_out in students_with_time_out:
             writer.writerow([student, time_out])
+            
+        #TOTAL OF ABSENT AND PRESENT
+        writer.writerow([])
+        writer.writerow(["Summary"])
+        writer.writerow(["Total Students", len(student_names)])
+        writer.writerow(["Total Present", total_present])
+        writer.writerow(["Total Absent", total_absent])
+
 
 def record_time_in(student_name):
     now = datetime.now()
@@ -105,6 +114,20 @@ def undo_time_out():
     student_name = selected_student.get()
     if 'time_out' in attendance_data.get(student_name, {}) and attendance_data[student_name]['time_out']:
         removed = attendance_data[student_name]['time_out'].pop()
+        
+def get_attendance_totals():
+    total_present = 0
+    total_absent = 0
+
+    for student in student_names:
+        times_in = attendance_data.get(student, {}).get("time_in", [])
+        if times_in:
+            total_present += 1
+        else:
+            total_absent += 1
+
+    return total_present, total_absent
+
 
 # GUI setup
 car = tk.Tk()
@@ -176,7 +199,9 @@ def handle_time_in():
     time_in = record_time_in(student_name)
     canvas.itemconfig(time_in_text_id, text=time_in)
     canvas.itemconfig(status_text_id, text=calculate_status_for_time_in(time_in))
+    update_totals_display()
     export_to_csv()
+
 
 def handle_time_out():
     student_name = selected_student.get()
@@ -198,6 +223,7 @@ def handle_time_out():
 def handle_undo_time_in():
     undo_time_in()
     update_student_display()
+    update_totals_display()  # ✅ Add this line
     export_to_csv()
 
 def handle_undo_time_out():
@@ -215,6 +241,7 @@ def update_student_display(*args):
     canvas.itemconfig(time_in_text_id, text=last_time_in)
     canvas.itemconfig(time_out_text_id, text=last_time_out)
     canvas.itemconfig(status_text_id, text=status)
+    update_totals_display()  # ✅ Add this here too
 
 def make_button(text, x, y, color, command):
     btn = tk.Button(car, text=text, command=command, font=('Arial', 14), bg=color, fg="white")
@@ -227,7 +254,17 @@ make_button("Time Out", 997, 340, "#FF9800", handle_time_out)
 make_button("Undo Time In", 587, 440, "#FF0000", handle_undo_time_in)
 make_button("Undo Time Out", 997, 440, "#D32F2F", handle_undo_time_out)
 
+# DISPLAY TOTAL OF ABSENT AND PRESENT
+total_present_text = canvas.create_text(80, 600, text="", font=('Arial', 18), anchor='nw', fill='green')
+total_absent_text = canvas.create_text(80, 640, text="", font=('Arial', 18), anchor='nw', fill='red')
+
 dropdown.bind("<<ComboboxSelected>>", update_student_display)
+
+def update_totals_display():
+    total_present, total_absent = get_attendance_totals()
+    canvas.itemconfig(total_present_text, text=f"Total Present: {total_present}")
+    canvas.itemconfig(total_absent_text, text=f"Total Absent: {total_absent}")
+
 
 def update_datetime():
     now = datetime.now()
